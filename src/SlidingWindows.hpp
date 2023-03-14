@@ -5,8 +5,8 @@
 #include "Types.hpp"
 
 namespace ShapeletGeneration {
-        static std::unordered_set<Window> GenerateWindows(const Series &series, uint length) {
-            std::unordered_set<Window> windows;
+        static std::vector<Window> GenerateWindows(const Series &series, uint length) {
+            std::vector<Window> windows;
 
             if (series.empty() || length == 0)
                 return windows;
@@ -16,7 +16,7 @@ namespace ShapeletGeneration {
                 const double yOffset = series[i]; // Always start a window at 0
                 for (uint offset = 0; offset < length; ++offset)
                     window.push_back(series[i + offset] - yOffset);
-                windows.emplace(window);
+                windows.push_back(window);
             }
 
             return windows;
@@ -27,18 +27,6 @@ namespace ShapeletGeneration {
 
             for (const auto &s : series) {
                 auto tWindows = GenerateWindows(s, length);
-                for (const auto &window : tWindows)
-                    windows.push_back(window);
-            }
-
-            return windows;
-        }
-
-        static std::vector<Window> GenerateWindows(const Series &series, uint minLength, uint maxLength) {
-            std::vector<Window> windows;
-
-            for (uint i = minLength; i < maxLength; i++) {
-                auto tWindows = GenerateWindows(series, i);
                 for (const auto &window : tWindows)
                     windows.push_back(window);
             }
