@@ -9,7 +9,7 @@
 #include "Types.hpp"
 
 namespace ShapeletGeneration {
-    static double CalculateEntropy(const std::unordered_set<int> &counts) {
+    static double CalculateEntropy(std::unordered_set<int> counts) {
         const int total = std::accumulate(counts.begin(), counts.end(), 0);
         double entropy = 0;
         for (const auto &c : counts) {

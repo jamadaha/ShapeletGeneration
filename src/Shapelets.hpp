@@ -34,7 +34,7 @@ namespace ShapeletGeneration {
     static double EvaluateWindow(const Window &window,
                                  std::pair<const std::vector<Series>*, const std::vector<Series>*> series,
                                  double bestScore) {
-        const double priorEntropy = CalculateEntropy({ (int) series.first->size(), (int) series.second->size() });
+        const double priorEntropy = CalculateEntropy(series.first->size() + series.second-> size(), { { 0, (int) series.first->size()}, { 1, (int) series.second->size() } } );
         std::map<double, std::unordered_map<int, int>> matchFrequency;
 
         const std::vector<std::pair<int, const Series*>> interleavedSeries = InterleavedSeries(series);
@@ -63,6 +63,9 @@ namespace ShapeletGeneration {
                                      std::pair<const std::vector<Window>*, const std::vector<Window>*> windows) {
         double bestEval = 0;
         std::optional<Shapelet> bestShapelet;
+
+        printf("Total Series %zu\n", series.first->size() + series.second->size());
+        printf("Total Windows %zu\n", windows.first->size() + windows.second->size());
 
         for (const auto &w : { std::cref(windows.first), std::cref(windows.second) }) {
             for (const auto& window : *w.get()) {
