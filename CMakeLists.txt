@@ -11,7 +11,11 @@ add_library(ShapeletGeneration
         src/SequenceMatching.hpp
         src/SlidingWindows.hpp
         src/Types.hpp
-        src/Shapelets.hpp)
+        src/Shapelets.hpp src/DataReader.h)
+
+add_executable(TestRunner TestRunner.cpp)
+target_link_libraries(TestRunner PRIVATE ShapeletGeneration)
+target_include_directories(TestRunner PRIVATE src)
 
 set_target_properties(ShapeletGeneration PROPERTIES LINKER_LANGUAGE CXX)
 

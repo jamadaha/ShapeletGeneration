@@ -5,9 +5,12 @@
 #include <optional>
 #include <functional>
 #include <map>
+#include <string>
 #include "Types.hpp"
 #include "InformationGain.hpp"
 #include "SequenceMatching.hpp"
+#include "DataReader.h"
+#include "SlidingWindows.hpp"
 
 namespace ShapeletGeneration {
     static std::vector<std::pair<int, const Series*>> InterleavedSeries(std::pair<const std::vector<Series>*, const std::vector<Series>*> series) {
@@ -42,11 +45,11 @@ namespace ShapeletGeneration {
             diff[s.first]--;
 
             for (uint i = 0; i < 2; i++) {
-                for (int t = 0; t < 2; t++)
-                    matchFrequency[1 - i][t] += diff[t];
+                matchFrequency[i][0] += diff[0];
+                matchFrequency[1 - i][1] += diff[1];
                 double optimalGain = CalculateInformationGain(matchFrequency, priorEntropy);
-                for (int t = 0; t < 2; t++)
-                    matchFrequency[1 - i][t] -= diff[t];
+                matchFrequency[i][0] -= diff[0];
+                matchFrequency[1 - i][1] -= diff[1];
                 if (optimalGain < bestScore)
                     return 0;
             }
@@ -66,35 +69,50 @@ namespace ShapeletGeneration {
                 auto eval = EvaluateWindow(window, series, bestEval);
                 assert(eval >= 0 && eval <= 1);
 
-                if (!bestShapelet.has_value() || eval < bestEval) {
+                if (!bestShapelet.has_value() || eval > bestEval) {
                     bestEval = eval;
                     bestShapelet = window;
                 }
             }
 
         }
-
+        printf("Gain %f\n", bestEval);
         assert(bestShapelet.has_value());
         return bestShapelet.value();
     }
 
     static std::vector<Shapelet> GenerateShapelets(const std::unordered_map<int, std::vector<Series>> &series,
                                                  const std::unordered_map<int, std::vector<Window>> &windows) {
+        printf("---Generating Shapelets---\n");
         std::vector<Shapelet> shapelets;
 
         // All unique pairs of classes
+        printf("---Generating Pairs---\n");
         std::vector<std::pair<int, int>> pairs;
         for (auto iter = series.begin(); iter != series.end(); iter++)
             for (auto iter2 = std::next(iter, 1); iter2 != series.end(); iter2++)
                 pairs.emplace_back((*iter).first, (*iter2).first);
+        printf("Total Pairs: %zu\n", pairs.size());
+        printf("---Finish Generating Pairs---\n");
 
-        for (const auto &p : pairs)
+        for (const auto &p : pairs) {
+            printf("---Generating Shapelet For Pair (%d,%d)---\n", p.first, p.second);
             shapelets.push_back(GenerateShapelet(
                     std::make_pair(&series.at(p.first), &series.at(p.second)),
                     std::make_pair(&windows.at(p.first), &windows.at(p.second))
-                    ));
+            ));
+            printf("---Finish Generating Shapelet For Pair (%d,%d)---\n", p.first, p.second);
+        }
 
+        printf("---Finish Generating Shapelets---\n");
         return shapelets;
+    }
+
+    static std::vector<Shapelet> GenerateShapelets(const std::string& path, char delimiter,
+                                                   int minWindowSize, int maxWindowSize) {
+        auto series = ReadCSV(path, delimiter);
+        auto windows = GenerateWindows(series, minWindowSize, maxWindowSize);
+        return GenerateShapelets(series, windows);
     }
 }
 

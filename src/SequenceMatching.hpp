@@ -22,9 +22,11 @@ namespace ShapeletGeneration {
         uint checked = 0;
         uint matchCount = 0;
 
-        for (uint i = 0; i < series.size() - window.size(); ++i, ++checked)
+        for (uint i = 0; i < series.size() - window.size(); ++i) {
             if (ToleranceMatch(series, i, window))
                 ++matchCount;
+            ++checked;
+        }
 
         return (double) matchCount / checked;
     }

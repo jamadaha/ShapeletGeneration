@@ -1,11 +1,12 @@
 #ifndef SHAPELETGENERATION_SLIDINGWINDOWS_HPP
 #define SHAPELETGENERATION_SLIDINGWINDOWS_HPP
 
+#include <unordered_set>
 #include "Types.hpp"
 
 namespace ShapeletGeneration {
-        static std::vector<Window> GenerateWindows(const Series &series, uint length) {
-            std::vector<Window> windows;
+        static std::unordered_set<Window> GenerateWindows(const Series &series, uint length) {
+            std::unordered_set<Window> windows;
 
             if (series.empty() || length == 0)
                 return windows;
@@ -15,7 +16,7 @@ namespace ShapeletGeneration {
                 const double yOffset = series[i]; // Always start a window at 0
                 for (uint offset = 0; offset < length; ++offset)
                     window.push_back(series[i + offset] - yOffset);
-                windows.push_back(window);
+                windows.emplace(window);
             }
 
             return windows;
@@ -26,7 +27,8 @@ namespace ShapeletGeneration {
 
             for (const auto &s : series) {
                 auto tWindows = GenerateWindows(s, length);
-                windows.insert(windows.end(), tWindows.begin(), tWindows.end());
+                for (const auto &window : tWindows)
+                    windows.push_back(window);
             }
 
             return windows;
@@ -37,7 +39,8 @@ namespace ShapeletGeneration {
 
             for (uint i = minLength; i < maxLength; i++) {
                 auto tWindows = GenerateWindows(series, i);
-                windows.insert(windows.end(), tWindows.begin(), tWindows.end());
+                for (const auto &window : tWindows)
+                    windows.push_back(window);
             }
 
             return windows;
@@ -48,9 +51,27 @@ namespace ShapeletGeneration {
 
             for (uint i = minLength; i < maxLength; i++) {
                 auto tWindows = GenerateWindows(series, i);
-                windows.insert(windows.end(), tWindows.begin(), tWindows.end());
+                for (const auto &window : tWindows)
+                    windows.push_back(window);
             }
 
+            return windows;
+        }
+
+        static std::unordered_map<int, std::vector<Window>>
+        GenerateWindows(const std::unordered_map<int, std::vector<Series>> &series, uint minLength, uint maxLength) {
+            printf("---Generating Windows---\n");
+            std::unordered_map<int, std::vector<Window>> windows;
+            uint totalWindows = 0;
+
+            for (const auto &seriesSet : series) {
+                const auto tempWindows = GenerateWindows(seriesSet.second, minLength, maxLength);
+                totalWindows += tempWindows.size();
+                windows.emplace(seriesSet.first, tempWindows);
+            }
+
+            printf("Total Windows: %d\n", totalWindows);
+            printf("---Finish Generating Windows---\n");
             return windows;
         }
 }
