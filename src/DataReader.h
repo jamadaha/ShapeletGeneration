@@ -8,7 +8,7 @@
 #include "Types.hpp"
 
 namespace ShapeletGeneration {
-    static std::unordered_map<int, std::vector<Series>> ReadCSV(const std::string& filePath, char delimiter = ',') {
+    static std::unordered_map<int, std::vector<Series>> ReadCSV(const std::string& filePath, std::string delimiter = ",") {
         printf("---Reading Data---\n");
         std::ifstream file(filePath);
         std::string line;
@@ -21,7 +21,7 @@ namespace ShapeletGeneration {
             std::vector<double> series;
             while (!line.empty()) {
                 std::string token;
-                while (!line.empty() && line[0] != delimiter) {
+                while (!line.empty() && line.substr(0, delimiter.size()) != delimiter) {
                     token += line[0];
                     line.erase(line.begin());
                 }
@@ -31,7 +31,7 @@ namespace ShapeletGeneration {
                 else
                     series.push_back(std::atof(token.c_str()));
 
-                if (!line.empty() && line[0] == delimiter)
+                if (!line.empty() && line.substr(0, delimiter.size()) == delimiter)
                     line.erase(line.begin());
             }
 
@@ -40,13 +40,27 @@ namespace ShapeletGeneration {
                 dataPoints[type.value()].push_back(series);
                 totalSeries++;
             } else
-                throw std::logic_error("Missing type on line " + lineNum);
+                throw std::logic_error(&"Missing type on line " [lineNum]);
 
             lineNum++;
         }
         printf("Total Series: %d\n", totalSeries);
         printf("---Finish Reading Data---\n");
+        file.close();
         return dataPoints;
+    }
+
+    static void WriteCSV(const std::string &filePath, const std::vector<std::vector<double>> &data, std::string delimiter = ",") {
+        std::ofstream out(filePath);
+        for (const auto &series : data) {
+            for (const auto &point : series) {
+                out << point;
+                if (point != series.at(series.size() - 1))
+                    out << delimiter;
+            }
+            out << "\n";
+        }
+        out.close();
     }
 }
 

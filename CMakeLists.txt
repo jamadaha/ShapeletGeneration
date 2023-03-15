@@ -13,9 +13,9 @@ add_library(ShapeletGeneration
         src/Types.hpp
         src/Shapelets.hpp src/DataReader.h)
 
-add_executable(TestRunner TestRunner.cpp)
-target_link_libraries(TestRunner PRIVATE ShapeletGeneration)
-target_include_directories(TestRunner PRIVATE src)
+add_executable(ShapeletGenerator ShapeletGenerator.cpp)
+target_link_libraries(ShapeletGenerator PRIVATE ShapeletGeneration)
+target_include_directories(ShapeletGenerator PRIVATE src)
 
 set_target_properties(ShapeletGeneration PROPERTIES LINKER_LANGUAGE CXX)
 

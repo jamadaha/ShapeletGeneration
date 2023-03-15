@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <stdexcept>
 
+#include <unordered_map>
 #include "SlidingWindows.hpp"
 
 using namespace ShapeletGeneration;

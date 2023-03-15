@@ -6,6 +6,7 @@
 #include <functional>
 #include <map>
 #include <string>
+#include <iostream>
 #include "Types.hpp"
 #include "InformationGain.hpp"
 #include "SequenceMatching.hpp"
@@ -64,9 +65,6 @@ namespace ShapeletGeneration {
         double bestEval = 0;
         std::optional<Shapelet> bestShapelet;
 
-        printf("Total Series %zu\n", series.first->size() + series.second->size());
-        printf("Total Windows %zu\n", windows.first->size() + windows.second->size());
-
         for (const auto &w : { std::cref(windows.first), std::cref(windows.second) }) {
             for (const auto& window : *w.get()) {
                 auto eval = EvaluateWindow(window, series, bestEval);
@@ -79,7 +77,6 @@ namespace ShapeletGeneration {
             }
 
         }
-        printf("Gain %f\n", bestEval);
         assert(bestShapelet.has_value());
         return bestShapelet.value();
     }
@@ -98,20 +95,20 @@ namespace ShapeletGeneration {
         printf("Total Pairs: %zu\n", pairs.size());
         printf("---Finish Generating Pairs---\n");
 
+        int index = 0;
         for (const auto &p : pairs) {
-            printf("---Generating Shapelet For Pair (%d,%d)---\n", p.first, p.second);
+            printf("Progress: %d/%zu\n", ++index, pairs.size());
             shapelets.push_back(GenerateShapelet(
                     std::make_pair(&series.at(p.first), &series.at(p.second)),
                     std::make_pair(&windows.at(p.first), &windows.at(p.second))
             ));
-            printf("---Finish Generating Shapelet For Pair (%d,%d)---\n", p.first, p.second);
         }
 
         printf("---Finish Generating Shapelets---\n");
         return shapelets;
     }
 
-    static std::vector<Shapelet> GenerateShapelets(const std::string& path, char delimiter,
+    static std::vector<Shapelet> GenerateShapelets(const std::string& path, std::string delimiter,
                                                    int minWindowSize, int maxWindowSize) {
         auto series = ReadCSV(path, delimiter);
         auto windows = GenerateWindows(series, minWindowSize, maxWindowSize);
