@@ -7,8 +7,8 @@
 
 using namespace ShapeletGeneration;
 
-std::unordered_map<int, int> Convert(std::string input) {
-    std::unordered_map<int, int> values;
+std::array<uint, maxClasses> Convert(std::string input) {
+    std::array<uint, maxClasses> values { 0 };
 
     std::stringstream iss(input);
 
@@ -19,11 +19,11 @@ std::unordered_map<int, int> Convert(std::string input) {
     return values;
 }
 
-int GetTotal(std::unordered_map<int, int> values) {
-    int total = 0;
+uint GetTotal(std::array<uint, maxClasses> values) {
+    uint total = 0;
 
-    for (const auto &pair : values)
-        total += pair.second;
+    for (const auto &value : values)
+        total += value;
 
     return total;
 }
@@ -31,7 +31,7 @@ int GetTotal(std::unordered_map<int, int> values) {
 int main(int, char* argv[]) {
     const auto counts = Convert(argv[1]);
     const double expectedEntropy = std::atof(argv[2]);
-    const int total = GetTotal(counts);
+    const uint total = GetTotal(counts);
 
 
     const double actualEntropy = std::round(ShapeletGeneration::CalculateEntropy(total, counts) * 100) / 100;

@@ -1,5 +1,5 @@
-#ifndef SHAPELETGENERATION_DATAREADER_H
-#define SHAPELETGENERATION_DATAREADER_H
+#ifndef SHAPELETGENERATION_FILEHANDLER_H
+#define SHAPELETGENERATION_FILEHANDLER_H
 
 #include <string>
 #include <optional>
@@ -8,13 +8,12 @@
 #include "Types.hpp"
 
 namespace ShapeletGeneration {
-    static std::unordered_map<int, std::vector<Series>> ReadCSV(const std::string& filePath, std::string delimiter = ",") {
+    static std::vector<LabelledSeries> ReadCSV(const std::string& filePath, std::string delimiter = ",") {
         printf("---Reading Data---\n");
         std::ifstream file(filePath);
         std::string line;
-        std::unordered_map<int, std::vector<Series>> dataPoints;
+        std::vector<LabelledSeries> dataPoints;
         int lineNum = 0;
-        uint totalSeries = 0;
         while (std::getline(file, line)) {
             // Read line
             std::optional<int> type;
@@ -36,15 +35,14 @@ namespace ShapeletGeneration {
             }
 
             // Append if valid line
-            if (type.has_value()) {
-                dataPoints[type.value()].push_back(series);
-                totalSeries++;
-            } else
+            if (type.has_value())
+                dataPoints.emplace_back(type.value(), series);
+            else
                 throw std::logic_error(&"Missing type on line " [lineNum]);
 
             lineNum++;
         }
-        printf("Total Series: %d\n", totalSeries);
+        printf("Total Series: %zu\n", dataPoints.size());
         printf("---Finish Reading Data---\n");
         file.close();
         return dataPoints;
@@ -64,4 +62,4 @@ namespace ShapeletGeneration {
     }
 }
 
-#endif //SHAPELETGENERATION_DATAREADER_H
+#endif //SHAPELETGENERATION_FILEHANDLER_H

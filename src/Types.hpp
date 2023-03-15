@@ -6,10 +6,17 @@
 #include <cassert>
 
 namespace ShapeletGeneration {
+    constexpr uint maxClasses = 20;
     using uint = unsigned int;
-    using Series = std::vector<double>;//std::vector<double>;
+    using Series = std::vector<double>;
+    struct LabelledSeries {
+        const int label;
+        const Series series;
+        LabelledSeries(int label, const Series series) : label(label), series(series) {}
+    };
     using Window = std::vector<double>;
     using Shapelet = Window;
+
 }
 
 #endif //SHAPELETGENERATION_TYPES_HPP

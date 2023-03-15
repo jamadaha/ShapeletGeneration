@@ -7,8 +7,8 @@
 
 using namespace ShapeletGeneration;
 
-std::unordered_map<int, int> Convert(std::string input) {
-    std::unordered_map<int, int> values;
+std::array<uint, maxClasses> Convert(std::string input) {
+    std::array<uint, maxClasses> values { 0 };
 
     std::stringstream iss(input);
 
@@ -19,26 +19,26 @@ std::unordered_map<int, int> Convert(std::string input) {
     return values;
 }
 
-int GetTotal(std::unordered_map<int, int> values) {
-    int total = 0;
+uint GetTotal(std::array<uint, maxClasses> values) {
+    uint total = 0;
 
-    for (const auto &pair : values)
-        total += pair.second;
+    for (const auto &value : values)
+        total += value;
 
     return total;
 }
 
 int main(int, char* argv[]) {
     const auto counts = Convert(argv[1]);
-    const double expectedGain = std::atof(argv[3]);
-    const int total = GetTotal(counts);
+    const double expectedEntropy = std::atof(argv[2]);
+    const uint total = GetTotal(counts);
 
 
     const double actualEntropy = std::round(ShapeletGeneration::CalculateEntropy(total, counts) * 100) / 100;
 
-    if (expectedGain == actualEntropy)
+    if (expectedEntropy == actualEntropy)
         exit(EXIT_SUCCESS);
     else
         throw std::logic_error("Unexpected entropy | Expected " +
-                               std::to_string(expectedGain) + " Received " + std::to_string(actualEntropy));
+                               std::to_string(expectedEntropy) + " Received " + std::to_string(actualEntropy));
 }

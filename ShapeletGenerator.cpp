@@ -17,8 +17,8 @@ int main(int, char* argv[]) {
 
     auto series = ReadCSV(path, delimiter);
     auto windows = GenerateWindows(series, minWindowSize, maxWindowSize);
-    auto shapelets =  GenerateShapelets(series, windows);
+    auto shapelet =  GenerateShapelets(series, windows);
 
-    ShapeletGeneration::WriteCSV("Out.tsv", shapelets, delimiter);
+    ShapeletGeneration::WriteCSV("Out.tsv", { shapelet }, delimiter);
     return 0;
 }

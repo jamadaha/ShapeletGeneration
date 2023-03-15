@@ -7,112 +7,49 @@
 #include <map>
 #include <string>
 #include <iostream>
+#include <memory>
 #include "Types.hpp"
 #include "InformationGain.hpp"
-#include "SequenceMatching.hpp"
-#include "DataReader.h"
+#include "FileHandler.h"
 #include "SlidingWindows.hpp"
+#include "attributes/Attribute.h"
+#include "attributes/Frequency.h"
 
 namespace ShapeletGeneration {
-    static std::vector<std::pair<int, const Series*>> InterleavedSeries(std::pair<const std::vector<Series>*, const std::vector<Series>*> series) {
-        std::vector<std::pair<int, const Series*>> interleavedSeries;
-        for (uint i = 0; i < std::min(series.first->size(), series.second->size()); i++) {
-            interleavedSeries.emplace_back(0, &series.first->at(i));
-            interleavedSeries.emplace_back(1, &series.second->at(i));
-        }
+    static Shapelet GenerateShapelets(const std::vector<LabelledSeries> &series,
+                                      const std::vector<Window> &windows) {
+        printf("---Generating Shapelets---\n");
+        std::vector<Attribute*> attributes {
+            new Frequency(0.1)
+        };
 
-        if (series.first->size() > series.second->size()) {
-            for (uint i = series.second->size(); i < series.first->size(); i++)
-                interleavedSeries.emplace_back(0, &series.first->at(i));
-        } else if (series.first->size() < series.second->size()) {
-            for (uint i = series.first->size(); i < series.second->size(); i++)
-                interleavedSeries.emplace_back(1, &series.second->at(i));
-        }
+        const double priorEntropy = CalculateEntropy(series);
+        std::unordered_map<int, int> counts;
+        for (const auto &s : series)
+            counts[s.label]++;
 
-        return interleavedSeries;
-    }
-
-    static double EvaluateWindow(const Window &window,
-                                 std::pair<const std::vector<Series>*, const std::vector<Series>*> series,
-                                 double bestScore) {
-        const double priorEntropy = CalculateEntropy(series.first->size() + series.second-> size(), { { 0, (int) series.first->size()}, { 1, (int) series.second->size() } } );
-        std::map<double, std::unordered_map<int, int>> matchFrequency;
-
-        const std::vector<std::pair<int, const Series*>> interleavedSeries = InterleavedSeries(series);
-
-        int diff[2] {  (int)series.first->size(), (int) series.second->size() };
-        for (const auto &s : interleavedSeries) {
-            matchFrequency[MatchFrequency(*s.second, window)][s.first]++;
-            diff[s.first]--;
-
-            for (uint i = 0; i < 2; i++) {
-                matchFrequency[i][0] += diff[0];
-                matchFrequency[1 - i][1] += diff[1];
-                double optimalGain = CalculateInformationGain(matchFrequency, priorEntropy);
-                matchFrequency[i][0] -= diff[0];
-                matchFrequency[1 - i][1] -= diff[1];
-                if (optimalGain < bestScore)
-                    return 0;
-            }
-
-        }
-
-        return CalculateInformationGain(matchFrequency, priorEntropy);
-    }
-
-    static Shapelet GenerateShapelet(std::pair<const std::vector<Series>*, const std::vector<Series>*> series,
-                                     std::pair<const std::vector<Window>*, const std::vector<Window>*> windows) {
-        double bestEval = 0;
         std::optional<Shapelet> bestShapelet;
+        double bestScore = 0;
+        Attribute *bestAttribute = nullptr;
 
-        for (const auto &w : { std::cref(windows.first), std::cref(windows.second) }) {
-            for (const auto& window : *w.get()) {
-                auto eval = EvaluateWindow(window, series, bestEval);
-                assert(eval >= 0 && eval <= 1);
-
-                if (!bestShapelet.has_value() || eval > bestEval) {
-                    bestEval = eval;
+        for (int i = 0; i < windows.size(); ++i) {
+            if (i % 10000 == 0)
+                printf("Checking window %d/%zu\n", i, windows.size());
+            const auto& window = windows.at(i);
+            for (const auto &attribute: attributes) {
+                const auto eval = attribute->EvaluateWindow(priorEntropy, bestScore, counts, series, window);
+                if (!bestShapelet.has_value() || eval > bestScore) {
                     bestShapelet = window;
+                    bestScore = eval;
+                    bestAttribute = attribute;
                 }
             }
-
-        }
-        assert(bestShapelet.has_value());
-        return bestShapelet.value();
-    }
-
-    static std::vector<Shapelet> GenerateShapelets(const std::unordered_map<int, std::vector<Series>> &series,
-                                                 const std::unordered_map<int, std::vector<Window>> &windows) {
-        printf("---Generating Shapelets---\n");
-        std::vector<Shapelet> shapelets;
-
-        // All unique pairs of classes
-        printf("---Generating Pairs---\n");
-        std::vector<std::pair<int, int>> pairs;
-        for (auto iter = series.begin(); iter != series.end(); iter++)
-            for (auto iter2 = std::next(iter, 1); iter2 != series.end(); iter2++)
-                pairs.emplace_back((*iter).first, (*iter2).first);
-        printf("Total Pairs: %zu\n", pairs.size());
-        printf("---Finish Generating Pairs---\n");
-
-        int index = 0;
-        for (const auto &p : pairs) {
-            printf("Progress: %d/%zu\n", ++index, pairs.size());
-            shapelets.push_back(GenerateShapelet(
-                    std::make_pair(&series.at(p.first), &series.at(p.second)),
-                    std::make_pair(&windows.at(p.first), &windows.at(p.second))
-            ));
         }
 
+        attributes.clear();
+        printf("Best gain: %f\n", bestScore);
         printf("---Finish Generating Shapelets---\n");
-        return shapelets;
-    }
-
-    static std::vector<Shapelet> GenerateShapelets(const std::string& path, std::string delimiter,
-                                                   int minWindowSize, int maxWindowSize) {
-        auto series = ReadCSV(path, delimiter);
-        auto windows = GenerateWindows(series, minWindowSize, maxWindowSize);
-        return GenerateShapelets(series, windows);
+        return bestShapelet.value();
     }
 }
 

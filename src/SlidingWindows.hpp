@@ -22,22 +22,10 @@ namespace ShapeletGeneration {
             return windows;
         }
 
-        static std::vector<Window> GenerateWindows(const std::vector<Series> &series, uint length) {
+        static std::vector<Window> GenerateWindows(const Series &series, uint minLength, uint maxLength) {
             std::vector<Window> windows;
 
-            for (const auto &s : series) {
-                auto tWindows = GenerateWindows(s, length);
-                for (const auto &window : tWindows)
-                    windows.push_back(window);
-            }
-
-            return windows;
-        }
-
-        static std::vector<Window> GenerateWindows(const std::vector<Series> &series, uint minLength, uint maxLength) {
-            std::vector<Window> windows;
-
-            for (uint i = minLength; i < maxLength; i++) {
+            for (uint i = minLength; i <= maxLength; i++) {
                 auto tWindows = GenerateWindows(series, i);
                 for (const auto &window : tWindows)
                     windows.push_back(window);
@@ -46,16 +34,17 @@ namespace ShapeletGeneration {
             return windows;
         }
 
-        static std::unordered_map<int, std::vector<Window>>
-        GenerateWindows(const std::unordered_map<int, std::vector<Series>> &series, uint minLength, uint maxLength) {
+        static std::vector<Window>
+        GenerateWindows(const std::vector<LabelledSeries> &series, uint minLength, uint maxLength) {
             printf("---Generating Windows---\n");
-            std::unordered_map<int, std::vector<Window>> windows;
+            std::vector<Window> windows;
             uint totalWindows = 0;
 
-            for (const auto &seriesSet : series) {
-                const auto tempWindows = GenerateWindows(seriesSet.second, minLength, maxLength);
+            for (const auto &s : series) {
+                const auto tempWindows = GenerateWindows(s.series, minLength, maxLength);
                 totalWindows += tempWindows.size();
-                windows.emplace(seriesSet.first, tempWindows);
+                for (const auto &window : tempWindows)
+                    windows.push_back(window);
             }
 
             printf("Total Windows: %d\n", totalWindows);
