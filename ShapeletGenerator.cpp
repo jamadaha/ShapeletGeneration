@@ -17,6 +17,10 @@ int main(int, char* argv[]) {
 
     auto series = ReadCSV(path, delimiter);
     auto windows = GenerateWindows(series, minWindowSize, maxWindowSize);
+    printf("---Removing Duplicate Windows---\n");
+    std::sort(windows.begin(), windows.end());
+    windows.erase(std::unique(windows.begin(), windows.end()), windows.end());
+    printf("---Finish Removal of Duplicate Windows\n");
     auto shapelet =  GenerateShapelets(series, windows);
 
     ShapeletGeneration::WriteCSV("Out.tsv", { shapelet }, delimiter);
