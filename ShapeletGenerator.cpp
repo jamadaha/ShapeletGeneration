@@ -1,6 +1,7 @@
 #include <unordered_map>
 #include <charconv>
 #include "src/Shapelets.hpp"
+#include "src/SeriesActions.h"
 
 using namespace ShapeletGeneration;
 
@@ -17,12 +18,14 @@ int main(int, char* argv[]) {
 
     auto series = ReadCSV(path, delimiter);
     auto windows = GenerateWindows(series, minWindowSize, maxWindowSize);
-    printf("---Removing Duplicate Windows---\n");
-    std::sort(windows.begin(), windows.end());
-    windows.erase(std::unique(windows.begin(), windows.end()), windows.end());
-    printf("---Finish Removal of Duplicate Windows\n");
-    auto shapelet =  GenerateShapelets(series, windows);
+    auto split =  GenerateShapelets(series, windows);
 
-    ShapeletGeneration::WriteCSV("Out.tsv", { shapelet }, delimiter);
+    printf("Before split probabilities:\n");
+    PrintProbabilities(GetCount(series));
+    auto splitValues = split.attribute->Split(series, split.shapelet);
+    printf("After probabilities:\n");
+    PrintProbabilities(GetCount(splitValues.first), GetCount(splitValues.second));
+
+    WriteCSV("out.tsv", {split.shapelet});
     return 0;
 }

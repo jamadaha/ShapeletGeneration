@@ -36,6 +36,25 @@ namespace ShapeletGeneration {
 
             return CalculateInformationGain(valueCount, priorEntropy);
         }
+
+        std::pair<std::vector<LabelledSeries>, std::vector<LabelledSeries>> Split(const std::vector<LabelledSeries> &series, const Shapelet &shapelet) const {
+            std::map<double, std::array<uint, maxClasses>> valueCount;
+            for (const auto &s : series)
+                valueCount[GenerateValue(s.series, shapelet)][s.label]++;
+            const double splitPoint = GetBestSplitPoint(valueCount);
+            std::vector<LabelledSeries> above;
+            std::vector<LabelledSeries> below;
+
+            for (const auto &s : series) {
+                if (GenerateValue(s.series, shapelet) > splitPoint)
+                    above.push_back(s);
+                else
+                    below.push_back(s);
+            }
+
+            return std::make_pair(below, above);
+        }
+
     private:
         [[nodiscard]] virtual double GenerateValue(const Series &series, const Window &window) const = 0;
     };

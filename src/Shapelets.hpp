@@ -8,17 +8,26 @@
 #include <string>
 #include <iostream>
 #include <memory>
+#include <utility>
 #include "Types.hpp"
 #include "InformationGain.hpp"
 #include "FileHandler.h"
 #include "SlidingWindows.hpp"
 #include "attributes/Attribute.h"
 #include "attributes/Frequency.h"
+#include "SeriesActions.h"
 
 namespace ShapeletGeneration {
-    static Shapelet GenerateShapelets(const std::vector<LabelledSeries> &series,
+    struct Split {
+        const Shapelet shapelet;
+        const Attribute* attribute;
+        const double gain;
+        Split(Shapelet shapelet, Attribute *attribute, double gain) : shapelet(std::move(shapelet)), attribute(attribute), gain(gain) {};
+    };
+
+    static Split GenerateShapelets(const std::vector<LabelledSeries> &series,
                                       const std::vector<Window> &windows) {
-        printf("---Generating Shapelets---\n");
+        printf("---Generating Shapelet---\n");
         std::vector<Attribute*> attributes {
             new Frequency(0.1),
             new Frequency(0.2),
@@ -28,9 +37,7 @@ namespace ShapeletGeneration {
         };
 
         const double priorEntropy = CalculateEntropy(series);
-        std::array<uint, maxClasses> counts { 0 };
-        for (const auto &s : series)
-            counts[s.label]++;
+        std::array<uint, maxClasses> counts = GetCount(series);
 
         std::optional<Shapelet> bestShapelet;
         double bestScore = 0;
@@ -50,10 +57,9 @@ namespace ShapeletGeneration {
             }
         }
 
-        attributes.clear();
         printf("Best gain: %f\n", bestScore);
         printf("---Finish Generating Shapelets---\n");
-        return bestShapelet.value();
+        return Split(bestShapelet.value(), bestAttribute, bestScore);
     }
 }
 

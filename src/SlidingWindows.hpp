@@ -47,8 +47,12 @@ namespace ShapeletGeneration {
                     windows.push_back(window);
             }
 
-            printf("Total Windows: %d\n", totalWindows);
             printf("---Finish Generating Windows---\n");
+            printf("---Removing Duplicate Windows---\n");
+            std::sort(windows.begin(), windows.end());
+            windows.erase(std::unique(windows.begin(), windows.end()), windows.end());
+            printf("---Finish Removal of Duplicate Windows---\n");
+            printf("Total Windows: %d\n", totalWindows);
             return windows;
         }
 }

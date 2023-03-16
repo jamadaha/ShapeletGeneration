@@ -7,6 +7,7 @@
 #include <cmath>
 #include <map>
 #include "Types.hpp"
+#include "SeriesActions.h"
 
 namespace ShapeletGeneration {
     static double CalculateEntropy(uint total, const std::array<uint, maxClasses> &counts) {
@@ -20,13 +21,10 @@ namespace ShapeletGeneration {
     }
 
     static double CalculateEntropy(const std::vector<LabelledSeries> &series) {
-        std::array<uint, maxClasses> counts { 0 };
-        for (const auto &s : series)
-            counts[s.label]++;
-
-        return CalculateEntropy(series.size(), counts);
+        return CalculateEntropy(series.size(), GetCount(series));
     }
 
+    // Splits given values according to those below and above
     static std::pair<std::array<uint, maxClasses>, std::array<uint, maxClasses>> GetSplit
     (const std::map<double, std::array<uint, maxClasses>> &values, double splitPoint) {
         std::array<uint, maxClasses> lowerCount { 0 };
@@ -89,6 +87,23 @@ namespace ShapeletGeneration {
         }
 
         return bestGain;
+    }
+
+    static double GetBestSplitPoint(const std::map<double, std::array<uint, maxClasses>> &matchFrequency) {
+        std::optional<double> bestPoint;
+        double bestSplitEntropy = 0;
+
+        for (auto iter = matchFrequency.begin(); iter != matchFrequency.end() && std::next(iter, 1) != matchFrequency.end(); iter++) {
+            const double splitPoint = iter->first + (std::next(iter, 1)->first - iter->first) / 2;
+            const double splitEntropy = CalculateSplitEntropy(matchFrequency, splitPoint);
+
+            if (!bestPoint.has_value() || splitEntropy < bestSplitEntropy) {
+                bestPoint = splitPoint;
+                bestSplitEntropy = splitEntropy;
+            }
+        }
+
+        return bestPoint.value();
     }
 }
 
