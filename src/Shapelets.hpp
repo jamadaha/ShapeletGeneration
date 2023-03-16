@@ -15,6 +15,7 @@
 #include "SlidingWindows.hpp"
 #include "attributes/Attribute.h"
 #include "attributes/Frequency.h"
+#include "attributes/Distance.h"
 #include "SeriesActions.h"
 
 namespace ShapeletGeneration {
@@ -29,11 +30,8 @@ namespace ShapeletGeneration {
                                       const std::vector<Window> &windows) {
         printf("---Generating Shapelet---\n");
         std::vector<Attribute*> attributes {
-            new Frequency(0.1),
-            new Frequency(0.2),
             new Frequency(0.4),
-            new Frequency(0.8),
-            new Frequency(1.6),
+            new Distance(MinValue(series), MaxValue(series))
         };
 
         const double priorEntropy = CalculateEntropy(series);

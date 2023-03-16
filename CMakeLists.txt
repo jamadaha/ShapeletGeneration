@@ -12,7 +12,7 @@ add_library(ShapeletGeneration
         src/Types.hpp
         src/Shapelets.hpp
         src/FileHandler.h
-        src/attributes/Attribute.h src/attributes/Frequency.h src/SeriesActions.h)
+        src/attributes/Attribute.h src/attributes/Frequency.h src/SeriesActions.h src/attributes/Distance.h)
 
 add_executable(ShapeletGenerator ShapeletGenerator.cpp)
 target_link_libraries(ShapeletGenerator PRIVATE ShapeletGeneration)

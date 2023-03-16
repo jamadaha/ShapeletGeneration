@@ -29,6 +29,22 @@ namespace ShapeletGeneration {
             counts[s.label]++;
         return counts;
     }
+
+    static double MinValue(const std::vector<LabelledSeries> &series) {
+        double minValue = 9999;
+        for (const auto &s : series)
+            for (const auto &v : s.series)
+                minValue = std::min(v, minValue);
+        return minValue;
+    }
+
+    static double MaxValue(const std::vector<LabelledSeries> &series) {
+        double minValue = -9999;
+        for (const auto &s : series)
+            for (const auto &v : s.series)
+                minValue = std::max(v, minValue);
+        return minValue;
+    }
 }
 
 #endif //SHAPELETGENERATION_SERIESACTIONS_H
