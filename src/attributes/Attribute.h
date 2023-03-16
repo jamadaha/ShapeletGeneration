@@ -9,13 +9,11 @@ namespace ShapeletGeneration {
     class Attribute {
     public:
         // Calculates the information gained by splitting based upon a derived attributes perception? of the window
-        double EvaluateWindow(double priorEntropy, double bestScore, const std::unordered_map<int, int> &classCounts,
+        double EvaluateWindow(double priorEntropy, double bestScore, const std::array<uint, maxClasses> &classCounts,
                               const std::vector<LabelledSeries> &series, const Window &window) {
             std::map<double, std::array<uint, maxClasses>> valueCount; // At the given value, how many of each class
 
-            std::array<uint, maxClasses> diff { 0 };
-            for (const auto &cc : classCounts)
-                diff[cc.first] = cc.second;
+            std::array<uint, maxClasses> diff { classCounts };
             for (const auto &s : series) {
                 valueCount[GenerateValue(s.series, window)][s.label]++;
                 diff.at(s.label)--;

@@ -20,11 +20,15 @@ namespace ShapeletGeneration {
                                       const std::vector<Window> &windows) {
         printf("---Generating Shapelets---\n");
         std::vector<Attribute*> attributes {
-            new Frequency(0.1)
+            new Frequency(0.1),
+            new Frequency(0.2),
+            new Frequency(0.4),
+            new Frequency(0.8),
+            new Frequency(1.6),
         };
 
         const double priorEntropy = CalculateEntropy(series);
-        std::unordered_map<int, int> counts;
+        std::array<uint, maxClasses> counts { 0 };
         for (const auto &s : series)
             counts[s.label]++;
 
