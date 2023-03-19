@@ -55,7 +55,6 @@ namespace ShapeletGeneration {
             return std::make_pair(below, above);
         }
 
-    private:
         [[nodiscard]] virtual double GenerateValue(const Series &series, const Window &window) const = 0;
     };
 }

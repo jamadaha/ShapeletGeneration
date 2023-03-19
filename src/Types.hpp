@@ -6,7 +6,7 @@
 #include <cassert>
 
 namespace ShapeletGeneration {
-    constexpr uint maxClasses = 20;
+    constexpr uint maxClasses = 62;
     using uint = unsigned int;
     using Series = std::vector<double>;
     struct LabelledSeries {

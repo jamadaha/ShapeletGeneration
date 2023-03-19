@@ -11,7 +11,6 @@
 #include <utility>
 #include "Types.hpp"
 #include "InformationGain.hpp"
-#include "FileHandler.h"
 #include "SlidingWindows.hpp"
 #include "attributes/Attribute.h"
 #include "attributes/Frequency.h"
@@ -29,9 +28,11 @@ namespace ShapeletGeneration {
     static Split GenerateShapelets(const std::vector<LabelledSeries> &series,
                                       const std::vector<Window> &windows) {
         printf("---Generating Shapelet---\n");
+        if (series.size() < 2)
+            throw std::logic_error("Cannot generate split of less than two values.");
         std::vector<Attribute*> attributes {
-            new Frequency(0.4),
-            new Distance(MinValue(series), MaxValue(series))
+            //new Distance(MinValue(series), MaxValue(series)),
+            new Frequency(std::abs(MaxValue(series) - MinValue(series)) / 10)
         };
 
         const double priorEntropy = CalculateEntropy(series);

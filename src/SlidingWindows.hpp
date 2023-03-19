@@ -5,6 +5,7 @@
 #include "Types.hpp"
 
 namespace ShapeletGeneration {
+    
         static std::vector<Window> GenerateWindows(const Series &series, uint length) {
             std::vector<Window> windows;
 

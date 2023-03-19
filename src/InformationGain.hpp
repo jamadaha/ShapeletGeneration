@@ -20,7 +20,7 @@ namespace ShapeletGeneration {
         return -entropy;
     }
 
-    static double CalculateEntropy(const std::vector<LabelledSeries> &series) {
+    static inline double CalculateEntropy(const std::vector<LabelledSeries> &series) {
         return CalculateEntropy(series.size(), GetCount(series));
     }
 

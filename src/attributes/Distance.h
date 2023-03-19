@@ -10,7 +10,7 @@ namespace ShapeletGeneration {
         Distance(double minValue, double maxValue) : dist(std::abs(maxValue - minValue)) {}
 
     private:
-        [[nodiscard]] double CalculateDistance(const Series &series, uint offset, const Window &window) const {
+        [[nodiscard]] static double CalculateDistance(const Series &series, uint offset, const Window &window) {
             double tempDist = 0;
             const double yOffset = series[offset];
 

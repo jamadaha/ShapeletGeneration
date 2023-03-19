@@ -5,7 +5,9 @@
 #include <optional>
 #include <fstream>
 #include <unordered_map>
+#include <filesystem>
 #include "Types.hpp"
+#include "Shapelets.hpp"
 
 namespace ShapeletGeneration {
     static std::vector<LabelledSeries> ReadCSV(const std::string& filePath, std::string delimiter = ",") {
@@ -48,17 +50,31 @@ namespace ShapeletGeneration {
         return dataPoints;
     }
 
-    static void WriteCSV(const std::string &filePath, const std::vector<std::vector<double>> &data, std::string delimiter = ",") {
+    static void WriteFeatureFile(const std::string &filePath, const std::vector<double> &values) {
         std::ofstream out(filePath);
-        for (const auto &series : data) {
-            for (const auto &point : series) {
-                out << point;
-                if (point != series.at(series.size() - 1))
-                    out << delimiter;
-            }
-            out << "\n";
+        for (const auto &point : values) {
+            out << point << '\n';
         }
         out.close();
+    }
+
+    static void WriteSplitValuesToFile(const std::vector<LabelledSeries> &series, const std::vector<Split> &splits) {
+        std::unordered_map<int, std::vector<Series>> mSeries;
+        for (const auto &s : series)
+            mSeries[s.label].push_back(s.series);
+        if (std::filesystem::is_directory("out"))
+            std::filesystem::remove_all("out");
+        std::filesystem::create_directories("out");
+        for (const auto &sPair : mSeries) {
+            const auto tempPath = "out/" + std::to_string(sPair.first);
+            std::filesystem::create_directories(tempPath);
+            for (int i = 0; i < sPair.second.size(); i++) {
+                std::vector<double> splitValues;
+                for (const auto &split: splits)
+                    splitValues.push_back(split.attribute->GenerateValue(sPair.second.at(i), (Window) split.shapelet));
+                WriteFeatureFile(tempPath + "/" + std::to_string(i), splitValues);
+            }
+        }
     }
 }
 
